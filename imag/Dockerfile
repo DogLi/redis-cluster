@@ -1,6 +1,8 @@
-FROM frolvlad/alpine-glibc
+FROM ubuntu:16.04
 
-RUN apk add --no-cache redis sed bash
+RUN apt-get update
+RUN apt-get install -y redis-server gawk bash
+RUN rm -rf /var/cache/apt/archives/*
 
 COPY run.sh /run.sh
 RUN chmod u+x /run.sh

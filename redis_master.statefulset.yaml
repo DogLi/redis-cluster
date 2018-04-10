@@ -37,13 +37,15 @@ spec:
       containers:
       - name: redis
         image: 127.0.0.1:30001/ylf/redis:0.1
+        #command: ["sleep"]
+        #args: ["100000"]
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 6379
         env:
         - name: MASTER
           value: "true"
-        - name: REDIS_PASS
+        - name: REDISPASS
           valueFrom:
             secretKeyRef:
               name: redis-secret
@@ -51,9 +53,17 @@ spec:
         volumeMounts:
         - name: redis-master-volume
           mountPath: /redis-master-data
+        - name: config-path
+          mountPath: /redis-master
 
       volumes:
       - name: redis-master-volume
         hostPath:
             path: /opt/redis/master-data
             type: Directory
+      - name: config-path
+        configMap:
+          name: redis-config
+          items:
+          - key: master-conf
+            path: redis.tmp
