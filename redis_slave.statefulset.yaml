@@ -39,6 +39,8 @@ spec:
             secretKeyRef:
               name: redis-secret
               key: AuthPass
+        - name: MASTERSVC
+          value: redis-master # master service name
         volumeMounts:
         - name: redis-volume
           mountPath: /data

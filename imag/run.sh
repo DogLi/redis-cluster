@@ -57,24 +57,8 @@ function launchsentinel() {
 }
 
 function launchslave() {
-  while true; do
-    master=$(redis-cli -a $REDISPASS -h ${REDIS_SENTINEL_SERVICE_HOST} -p ${REDIS_SENTINEL_SERVICE_PORT} --csv SENTINEL get-master-addr-by-name mymaster | tr ',' ' ' | cut -d' ' -f1)
-    if [[ -n ${master} ]]; then
-      master="${master//\"}"
-    else
-      echo "Failed to find master."
-      sleep 60
-      exit 1
-    fi 
-    redis-cli -a $REDISPASS -h ${master} INFO
-    if [[ "$?" == "0" ]]; then
-      break
-    fi
-    echo "Connecting to master failed.  Waiting..."
-    sleep 10
-  done
-  awk -v my_var=$master '{ sub(/%master-ip%/, my_var); print }' /redis-slave/redis.conf > /redis-slave/redis.conf
-  awk -v my_var=$REDISPASS '{ sub(/%redis-pass%/, my_var); print }' /redis-slave/redis.conf > /redis-slave/redis.conf
+  awk -v my_var=$MASTERSVC '{ sub(/%master-ip%/, my_var); print }' /redis-slave/redis.tmp > /redis-slave/redis.conf
+  awk -v my_var=$REDISPASS '{ sub(/%redis-pass%/, my_var); print }' /redis-slave/redis.tmp > /redis-slave/redis.conf
   redis-server /redis-slave/redis.conf --protected-mode no
 }
 
