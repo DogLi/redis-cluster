@@ -31,7 +31,7 @@ data:
     rdbcompression yes
     rdbchecksum yes
     dbfilename dump.rdb
-    dir /redis-master-data
+    dir /redis/master-data
     slave-serve-stale-data yes
     rename-command FLUSHALL ""
     rename-command FLUSHDB ""
@@ -67,7 +67,7 @@ data:
     client-output-buffer-limit pubsub 32mb 8mb 60
     hz 10
     aof-rewrite-incremental-fsync yes
-  master-conf: |
+  slave-conf: |
     daemonize no
     pidfile /var/run/redis.pid
     port 6379
@@ -85,7 +85,7 @@ data:
     rdbcompression yes
     rdbchecksum yes
     dbfilename dump.rdb
-    dir "/data"
+    dir /redis/slave-data
     slaveof %master-ip% 6379
     masterauth %redis-pass%
     slave-serve-stale-data yes

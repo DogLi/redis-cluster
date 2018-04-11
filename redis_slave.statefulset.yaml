@@ -1,24 +1,27 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: redis
+  name: redis-slave
   namespace: default
   labels:
     app: redis
 spec:
   ports:
     - port: 6379
-  clusterIP: None
+      nodePort: 30011
+      targetPort: 6379
   selector:
     app: redis
+    type: slave
+  type: NodePort
 ---
 apiVersion: apps/v1beta1
 kind: StatefulSet
 metadata:
-  name: redis
+  name: redis-slave
   namespace: default
   labels:
-    name: redis
+    name: redis-slave
 spec:
   serviceName: redis
   replicas: 1
@@ -26,15 +29,18 @@ spec:
     metadata:
       labels:
         app: redis
+        type: slave
     spec:
       containers:
       - name: redis
         image: 127.0.0.1:30001/ylf/redis:0.1
         imagePullPolicy: IfNotPresent
+        #command: ["sleep"]
+        #args: ["9999999"]
         ports:
         - containerPort: 6379
         env:
-        - name: REDIS_PASS
+        - name: REDISPASS
           valueFrom:
             secretKeyRef:
               name: redis-secret
@@ -42,10 +48,18 @@ spec:
         - name: MASTERSVC
           value: redis-master # master service name
         volumeMounts:
-        - name: redis-volume
-          mountPath: /data
+        - name: redis-slave-volume
+          mountPath: /redis/slave-data
+        - name: config-path
+          mountPath: /redis/slave-config
       volumes:
-      - name: redis-volume
+      - name: redis-slave-volume
         hostPath:
             path: /opt/redis/slave-data
             type: Directory
+      - name: config-path
+        configMap:
+          name: redis-config
+          items:
+          - key: slave-conf
+            path: redis.tmp
